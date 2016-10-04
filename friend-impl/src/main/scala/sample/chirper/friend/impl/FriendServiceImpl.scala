@@ -43,9 +43,9 @@ class FriendServiceImpl @Inject() (
       friendEntityRef(request.userId).ask[Done, CreateUser](CreateUser(request))
   }
 
-  override def addFriend(userId: String): ServiceCall[FriendId, NotUsed] = {
+  override def addFriend(user_Id: String): ServiceCall[FriendId, NotUsed] = {
     request =>
-      friendEntityRef(userId).ask[Done, AddFriend](AddFriend(request.friendId))
+      friendEntityRef(user_Id).ask[Done, AddFriend](AddFriend(request.friendId))
   }
 
   override def getFollowers(id: String): ServiceCall[NotUsed, Seq[String]] = {
