@@ -57,6 +57,10 @@ class FriendServiceImpl @Inject() (
         }
       }
   }
+  
+  override def removeFriend(userId: String): ServiceCall[FriendId, NotUsed] = {
+    request => null
+  }
 
   private def friendEntityRef(userId: String) =
     persistentEntities.refFor(classOf[FriendEntity], userId)

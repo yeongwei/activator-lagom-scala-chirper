@@ -46,6 +46,8 @@ trait FriendService extends Service {
    */
   def getFollowers(id: String): ServiceCall[NotUsed, Seq[String]]
 
+  def removeFriend(userId: String): ServiceCall[FriendId, NotUsed]
+  
   override def descriptor(): Descriptor = {
     // @formatter:off
     named("friendservice").withCalls(
