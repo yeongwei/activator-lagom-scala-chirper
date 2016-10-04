@@ -99,6 +99,10 @@ object ActivityStreamServiceTest {
           else throw new NotFound(userId);
         }
     }
+      
+    override def removeFriend(userId: String): ServiceCall[FriendId, NotUsed] = {
+      _ => Future.successful(NotUsed)
+    }
   }
 
   private class ChirpServiceStub extends ChirpService {
