@@ -26,21 +26,26 @@ class FriendEventProcessor @Inject()(implicit ec: ExecutionContext) extends Cass
 
   @volatile private var writeFollowers: PreparedStatement = null // initialized in prepare
   @volatile private var writeOffset: PreparedStatement = null // initialized in prepare
+  @volatile private var removeFollower: PreparedStatement = null
 
   private def setWriteFollowers(writeFollowers: PreparedStatement): Unit =
     this.writeFollowers = writeFollowers
 
   private def setWriteOffset(writeOffset: PreparedStatement): Unit =
     this.writeOffset = writeOffset
+    
+  private def setRemoveFollower(removeFollower: PreparedStatement): Unit =
+    this.removeFollower = removeFollower
 
   override def aggregateTag: AggregateEventTag[FriendEvent] = FriendEvent.Tag
 
   override def prepare(session: CassandraSession) = {
     // @formatter:off
     prepareCreateTables(session).thenCompose(a =>
-    prepareWriteFollowers(session).thenCompose(b =>
-    prepareWriteOffset(session).thenCompose(c =>
-    selectOffset(session))))
+      prepareWriteFollowers(session).thenCompose(b =>
+        prepareWriteOffset(session).thenCompose(c =>
+          prepareRemoveFollowers(session).thenCompose(d =>
+            selectOffset(session)))))
     // @formatter:on
   }
 
@@ -64,6 +69,15 @@ class FriendEventProcessor @Inject()(implicit ec: ExecutionContext) extends Cass
       Done
     })
   }
+  
+  private def prepareRemoveFollowers(session: CassandraSession) = {
+    val statement = session.prepare("DELETE FROM follower where userId = ? and followedBy = ?")
+    statement.map(ps => {
+      setRemoveFollower(ps)
+      Done
+    })
+    
+  }
 
   private def prepareWriteOffset(session: CassandraSession) = {
     val statement = session.prepare("INSERT INTO friend_offset (partition, offset) VALUES (1, ?)")
@@ -80,6 +94,7 @@ class FriendEventProcessor @Inject()(implicit ec: ExecutionContext) extends Cass
 
   override def defineEventHandlers(builder: EventHandlersBuilder): EventHandlers = {
     builder.setEventHandler(classOf[FriendAdded], processFriendChanged)
+    builder.setEventHandler(classOf[FriendRemoved], processFriendRemoved)
     builder.build()
   }
 
@@ -89,6 +104,15 @@ class FriendEventProcessor @Inject()(implicit ec: ExecutionContext) extends Cass
     bindWriteFollowers.setString("followedBy", event.userId)
     val bindWriteOffset = writeOffset.bind(offset)
     completedStatements(Seq(bindWriteFollowers, bindWriteOffset).asJava)
+  }
+  
+  private def processFriendRemoved(event: FriendRemoved, offset: UUID) = {
+    val bindRemoveFollowers = removeFollower.bind()
+    println(s"DEBUG Within processFriendRemoved userId: ${event.friendId} followedBy: ${event.userId}")
+    bindRemoveFollowers.setString("userId", event.friendId)
+    bindRemoveFollowers.setString("followedBy", event.userId)
+    val bindWriteOffset = writeOffset.bind(offset)
+    completedStatements(Seq(bindRemoveFollowers, bindWriteOffset).asJava)
   }
 
 }

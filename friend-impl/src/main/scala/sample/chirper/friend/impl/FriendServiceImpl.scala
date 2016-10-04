@@ -58,8 +58,10 @@ class FriendServiceImpl @Inject() (
       }
   }
   
-  override def removeFriend(userId: String): ServiceCall[FriendId, NotUsed] = {
-    request => null
+  override def removeFriend(userId: String, friendId: String): ServiceCall[NotUsed, NotUsed] = {
+    println(s"DEBUG: Within removeFriend userId: ${userId} friendId: ${friendId}")
+    // Difference between userId and friendId ???
+    request => friendEntityRef(userId).ask[Done, RemoveFriend](RemoveFriend(userId, friendId))
   }
 
   private def friendEntityRef(userId: String) =

@@ -48,6 +48,25 @@ class FriendEntity extends PersistentEntity[FriendCommand, FriendEvent, FriendSt
       ctx.reply(GetUserReply(state.user))
     )
 
+    b.setCommandHandler(classOf[RemoveFriend], (cmd: RemoveFriend, ctx: CommandContext[Done]) => {
+      state.user match {
+        case None => 
+          ctx.invalidCommand(s"User ${entityId} is not a friend yet") // entityId passed in from callee
+          ctx.done()
+        case Some(user) => {
+          println(s"DEBUG: Received RemoveFriend command: ${user} cmd: ${cmd}")
+          if (user.friends.contains(cmd.friendId)) {
+            println(s"DEBUG: User ${user.userId} has friend ${cmd.friendId}")
+            ctx.thenPersist(FriendRemoved(user.userId, cmd.friendId), (evt: FriendRemoved) => ctx.reply(Done))
+          } else {
+            println(s"DEBUG: User ${user.userId} does not have friend ${cmd.friendId}")
+            ctx.reply(Done)
+            ctx.done()
+          }
+        }
+      }
+    })
+    
     b.build()
   }
 

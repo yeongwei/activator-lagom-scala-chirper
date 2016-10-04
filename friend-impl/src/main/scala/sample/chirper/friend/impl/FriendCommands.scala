@@ -16,3 +16,4 @@ case class GetUser() extends PersistentEntity.ReplyType[GetUserReply] with Frien
 
 case class GetUserReply(user: Option[User]) extends Jsonable
 case class AddFriend(friendUserId: String) extends PersistentEntity.ReplyType[Done] with FriendCommand
+case class RemoveFriend(userId: String, friendId: String) extends PersistentEntity.ReplyType[Done] with FriendCommand

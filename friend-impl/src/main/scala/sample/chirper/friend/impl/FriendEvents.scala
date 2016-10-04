@@ -18,3 +18,5 @@ sealed trait FriendEvent extends AggregateEvent[FriendEvent] with Jsonable {
 case class UserCreated(userId: String, name: String, timestamp: Instant = Instant.now()) extends FriendEvent
 
 case class FriendAdded(userId: String, friendId: String, timestamp: Instant = Instant.now()) extends FriendEvent
+
+case class FriendRemoved(userId: String, friendId: String, timestamp: Instant = Instant.now()) extends FriendEvent

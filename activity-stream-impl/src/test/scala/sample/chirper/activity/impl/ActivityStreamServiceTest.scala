@@ -100,8 +100,8 @@ object ActivityStreamServiceTest {
         }
     }
       
-    override def removeFriend(userId: String): ServiceCall[FriendId, NotUsed] = {
-      _ => Future.successful(NotUsed)
+    override def removeFriend(userId: String, friendId: String): ServiceCall[NotUsed, NotUsed] = {
+      _ => throw new RuntimeException("Destinied to fail")
     }
   }
 

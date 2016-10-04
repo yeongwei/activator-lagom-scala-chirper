@@ -46,7 +46,7 @@ trait FriendService extends Service {
    */
   def getFollowers(id: String): ServiceCall[NotUsed, Seq[String]]
 
-  def removeFriend(userId: String): ServiceCall[FriendId, NotUsed]
+  def removeFriend(userId: String, friendId: String): ServiceCall[NotUsed, NotUsed] 
   
   override def descriptor(): Descriptor = {
     // @formatter:off
@@ -54,7 +54,8 @@ trait FriendService extends Service {
         pathCall("/api/users/:this_can_be_anything", getUser _),
         namedCall("/api/users", createUser _),
         pathCall("/api/users/:the_name_used_here/friends", addFriend _),
-        pathCall("/api/users/:does_not_need_to_be_consistent/followers", getFollowers _)
+        pathCall("/api/users/:does_not_need_to_be_consistent/followers", getFollowers _),
+        pathCall("/api/users/:userid/remove/:friendId", removeFriend _)
       ).withAutoAcl(true)
     // @formatter:on
   }
